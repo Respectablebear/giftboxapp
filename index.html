@@ -71,7 +71,7 @@
     <!-- Babel for JSX transformation -->
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     
-    <!-- Three.js and OrbitControls -->
+    <!-- Three.js Library -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <!-- Corrected OrbitControls CDN -->
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
@@ -111,6 +111,7 @@
             const [ribbonColor, setRibbonColor] = React.useState('#ffd700'); // Default to gold
             const [comments, setComments] = React.useState('');
             const [error, setError] = React.useState(null);
+            const [controlsLoaded, setControlsLoaded] = React.useState(false); // New state to track script loading
             
             // Define a map of colors for the paper mache and ribbon
             const paperMacheColorOptions = {
@@ -141,10 +142,30 @@
             const confettiGroupRef = React.useRef(new THREE.Group());
             const controlsRef = React.useRef(null);
 
+            // Effect to dynamically load OrbitControls
+            React.useEffect(() => {
+                const script = document.createElement('script');
+                script.src = "https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js";
+                script.onload = () => {
+                    // Set state to true once the script is loaded
+                    setControlsLoaded(true);
+                };
+                script.onerror = () => {
+                    setError("Failed to load OrbitControls script.");
+                };
+                document.body.appendChild(script);
+
+                // Cleanup function
+                return () => {
+                    document.body.removeChild(script);
+                };
+            }, []);
+
             React.useEffect(() => {
                 const initScene = () => {
                     try {
-                        if (!canvasRef.current) {
+                        // Only run if the canvas and controls are ready
+                        if (!canvasRef.current || !controlsLoaded) {
                             return;
                         }
 
@@ -236,7 +257,8 @@
                         scene.add(lidMeshRef.current);
                         
                         // --- Orbit Controls ---
-                        const controls = new OrbitControls(camera, renderer.domElement);
+                        // Use the correctly defined OrbitControls from the global scope.
+                        const controls = new THREE.OrbitControls(camera, renderer.domElement);
                         controlsRef.current = controls;
 
                         // --- Animation Loop ---
@@ -284,7 +306,7 @@
                 };
 
                 initScene();
-            }, []);
+            }, [controlsLoaded]); // Re-run this effect when controlsLoaded state changes
 
             // Effect to handle lid and ribbon state changes
             React.useEffect(() => {
