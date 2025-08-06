@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <!-- Essential for responsive design: sets viewport width to device width and initial zoom level -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sharebear Box Designer</title>
     <!-- Tailwind CSS for styling -->
@@ -10,23 +11,24 @@
         /* Custom styles for the app container */
         .app-container {
             display: flex;
-            flex-direction: column;
-            height: 100vh;
+            flex-direction: column; /* Default to column layout for mobile */
+            height: 100vh; /* Full viewport height */
             background-color: #f3f4f6;
             font-family: 'Inter', sans-serif;
         }
 
+        /* Media query for larger screens (e.g., tablets and desktops) */
         @media (min-width: 768px) {
             .app-container {
-                flex-direction: row;
+                flex-direction: row; /* Switch to row layout for desktop */
             }
         }
         
-        /* Ensure the canvas fills the container */
+        /* Ensure the canvas fills its container, height will be managed by flexbox */
         .canvas-container {
-            flex: 1;
+            flex: 1; /* Allows the canvas container to grow and shrink */
             width: 100%;
-            height: 100vh;
+            /* Removed fixed height: 100vh here, as it conflicts with flex-direction: column on mobile */
             position: relative;
             overflow: hidden;
         }
@@ -34,10 +36,10 @@
         canvas {
             display: block;
             width: 100%;
-            height: 100%;
+            height: 100%; /* Canvas itself fills its parent container */
         }
 
-        /* Hide scrollbars on mobile for a cleaner look */
+        /* Hide scrollbars on body for a cleaner look, especially on mobile */
         body {
             overflow: hidden;
         }
@@ -136,7 +138,8 @@
 
             const sceneRef = React.useRef(null);
             const cameraRef = React.useRef(null);
-            const rendererRef = React.useRef(null);
+            // Fix: Declared rendererRef using const within the component scope
+            const rendererRef = React.useRef(null); 
             const baseMeshRef = React.useRef(null);
             const lidMeshRef = React.useRef(null);
             const confettiGroupRef = React.useRef(new THREE.Group());
@@ -392,7 +395,9 @@
                 <div className="flex flex-col md:flex-row h-screen bg-gray-100 font-sans">
                 
                 {/* Control Panel */}
-                <div className="w-1/3 p-6 bg-white shadow-lg overflow-y-auto">
+                {/* On mobile (default), takes full width and automatically adjusts height with overflow-y-auto */}
+                {/* On medium screens and up (md:), takes 1/3 width and full height */}
+                <div className="w-full md:w-1/3 p-6 bg-white shadow-lg overflow-y-auto h-auto md:h-full">
                     <h1 className="text-3xl font-bold mb-4 text-gray-800">Sharebear Box Designer</h1>
                     <p className="text-gray-600 mb-6">
                     A classic two-piece box with a removable lid.
@@ -481,7 +486,8 @@
                 </div>
                 
                 {/* Three.js Canvas or Error Message */}
-                <div className="flex-1 w-full h-screen relative overflow-hidden">
+                {/* On mobile, this will take the remaining height. On desktop, it will flex to fill. */}
+                <div className="flex-1 w-full relative overflow-hidden h-full">
                     {error ? (
                         <div className="error-message">
                             <h2 className="text-2xl font-bold text-red-600">Error</h2>
